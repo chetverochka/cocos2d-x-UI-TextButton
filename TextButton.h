@@ -42,28 +42,33 @@ private:
 		if (!m_titleLabel)
 			return;
 
-		setTitleLabel(m_titleLabel);
-		setTitleText(m_text);
-		resetTitleSize();
+		addChild(m_titleLabel);
+		resetTitle();
 	}
-	void resetTitleSize() {
+	void resetTitle() {
 		if (!m_titleLabel) 
 			return;
-		
-		float kHeight = 0.6;
-		float kWidth = 0.8;
-
 		cocos2d::Size buttonSize = getContentSize();
 
-		float scale = (buttonSize.height * kHeight) / m_titleLabel->getBoundingBox().size.height;
+		float maxHeight = buttonSize.height * 0.66f;
+		float maxWidth = buttonSize.width * 0.85f;
+
+
+		m_titleLabel->setScale(1);
+		float scale = maxWidth / m_titleLabel->getBoundingBox().size.width;
 		m_titleLabel->setScale(scale);
-
-		cocos2d::Size labelSize = m_titleLabel->getBoundingBox().size;
-
-		if (labelSize.width > buttonSize.width * kWidth) {
-			scale = (buttonSize.width * kWidth) / labelSize.width;
+		
+		if (m_titleLabel->getBoundingBox().size.height > maxHeight) {
+			m_titleLabel->setScale(1);
+			scale = maxHeight / m_titleLabel->getBoundingBox().size.height;
 			m_titleLabel->setScale(scale);
 		}
+
+
+		m_titleLabel->setPosition(buttonSize / 2);
+		// отступ текста снизу для кривых шрифтов
+		float marginBottom = 0.15f;
+		m_titleLabel->setPositionY(m_titleLabel->getPositionY() + (m_titleLabel->getBoundingBox().size.height * marginBottom));
 	}
 public:
 	static TextButton* create(std::string text) {
@@ -78,13 +83,7 @@ public:
 	}
 	void setContentSize(const cocos2d::Size& size) override {
 		cocos2d::ui::Button::setContentSize(size);
-		resetTitleSize();
-
-		if (m_titleLabel) {
-			float marginBottom = 0.05f;
-			cocos2d::Size labelSize = m_titleLabel->getBoundingBox().size;
-			m_titleLabel->setPositionY(m_titleLabel->getPositionY() + (labelSize.height * marginBottom));
-		}
+		resetTitle();
 	}
 
 	void setCallback(std::function<void(TextButton*)> defaultCallback) {
@@ -118,8 +117,14 @@ protected:
 		}
 	}
 
-	virtual void onTouchBegan() {}
-	virtual void onTouchEnded() {}
-	virtual void onTouchCancelled() {}
+	virtual void onTouchBegan() {
+		runAction(cocos2d::EaseBounceOut::create(cocos2d::ScaleTo::create(0.4f, 1.08)));
+	}
+	virtual void onTouchEnded() {
+		runAction(cocos2d::EaseBounceOut::create(cocos2d::ScaleTo::create(0.4f, 1.f)));
+	}
+	virtual void onTouchCancelled() {
+		runAction(cocos2d::EaseBounceOut::create(cocos2d::ScaleTo::create(0.4f, 1.f)));
+	}
 	virtual void onTouchMoved() {}
 };
